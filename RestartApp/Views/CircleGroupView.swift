@@ -9,9 +9,9 @@ import SwiftUI
 
 struct CircleGroupView: View {
     
-    // State property wrapper can read and write a value managed by SwiftUI
     @State var ShapeColor: Color
     @State var ShapeOpacity: Double
+    @State private var IsAnimating: Bool = false
     
     var body: some View {
         ZStack{
@@ -21,6 +21,13 @@ struct CircleGroupView: View {
             Circle()
                 .stroke(ShapeColor.opacity(ShapeOpacity), lineWidth: 80)
                 .frame(width: 260, height: 260, alignment: .center)
+        }
+        .blur(radius: IsAnimating ? 0 : 10)
+        .opacity(IsAnimating ? 1 : 0)
+        .scaleEffect(IsAnimating ? 1 : 0.5)
+        .animation(.easeOut(duration: 1), value: IsAnimating)
+        .onAppear {
+            IsAnimating = true
         }
     }
 }
