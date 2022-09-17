@@ -14,7 +14,12 @@ struct OnboardingView: View {
     @State private var ButtonWidth: Double = UIScreen.main.bounds.width - 80
     @State private var ButtonOffset: CGFloat = 0
     @State private var IsAnimating: Bool = false
-    // we declare properties as Stage property as and when we want the values to be changed later on
+    // @State private var ImageOffset: CGSize = CGSize(width: 0, height: 0)
+    // below line is same as above commented line
+    @State private var ImageOffset: CGSize = .zero
+    @State private var IndicatorOpacity: Double = 1.0
+    @State private var TextTitle: String = "Share"
+    
     
     var body: some View {
         ZStack {
@@ -25,10 +30,12 @@ struct OnboardingView: View {
                 
                 Spacer()
                 VStack(spacing: 0){
-                    Text("Share")
+                    Text(TextTitle)
                         .font(.system(size: 60))
                         .fontWeight(.heavy)
                         .foregroundColor(.white)
+                        .transition(.opacity)
+                        .id(TextTitle)
                     
                     Text("""
                 Its not how much we give but
@@ -42,14 +49,15 @@ struct OnboardingView: View {
                 }
                 .opacity(IsAnimating ? 1 : 0)
                 .offset(y: IsAnimating ? 0 : -40)
-                // first parameter is animation parameter which now has easeOut animation. This animation, slows down at end with a pre-defined 1 second duration (which is explicitly added in code)
-                // second parameter is value parameter, which basically talks about what factor is causing this change in animation
                 .animation(.easeOut(duration: 1), value: IsAnimating)
                 
                 // Center
                 ZStack{
                     
                     CircleGroupView(ShapeColor: .white, ShapeOpacity: 0.2)
+                        .offset(x: ImageOffset.width * -1) // value is given in negative as we want this effect to happen in opposite direction of run image
+                        .blur(radius: abs(ImageOffset.width/5))
+                        .animation(.easeOut(duration: 1), value: ImageOffset)
                     
                     Image("character-1")
                         .resizable()
@@ -57,7 +65,44 @@ struct OnboardingView: View {
                         .padding()
                         .opacity(IsAnimating ? 1 : 0)
                         .animation(.easeOut(duration: 0.5), value: IsAnimating)
+                        .offset(x: ImageOffset.width * 1.2, y: 0)
+                        .rotationEffect(.degrees(Double(ImageOffset.width/20)))
+                        .gesture(
+                            DragGesture()
+                                .onChanged({ gesture in
+                                    if abs(ImageOffset.width) <= 150 {
+                                        // translation provides information about total movement from start of drag gesture to current event
+                                        ImageOffset = gesture.translation
+                                        
+                                        withAnimation(.linear(duration: 0.25)){
+                                            IndicatorOpacity = 0
+                                            TextTitle = "Give"
+                                        }
+                                    }
+                                })
+                                .onEnded({ _ in
+                                    ImageOffset = .zero
+                                    
+                                    withAnimation(.linear(duration: 0.25)){
+                                        IndicatorOpacity = 1
+                                        TextTitle = "Share"
+                                    }
+                                })
+                        )
+                        .animation(.easeOut(duration: 1), value: ImageOffset)
                 }
+                .overlay(
+                Image(systemName: "arrow.left.and.right.circle")
+                    .font(.system(size: 44, weight: .ultraLight))
+                    .foregroundColor(.white)
+                    .offset(y: 20)
+                    .opacity(IsAnimating ? 1 : 0)
+                    .animation(.easeOut(duration: 1).delay(2), value: IsAnimating)
+                    .opacity(IndicatorOpacity)
+                , alignment: .bottom
+                )
+                
+                Spacer()
                 
                 // Footer
                 ZStack{
@@ -98,22 +143,22 @@ struct OnboardingView: View {
                             // Button/Drag gesture has 2 states :
                             // Active State : When user is dragging
                             // Idle State : When button is inactive
-                        DragGesture()
-                            .onChanged({ gesture in
-                                if gesture.translation.width > 0 && ButtonOffset <= ButtonWidth - 80  {
-                                    ButtonOffset = gesture.translation.width
-                                }
-                            })
-                            .onEnded({ _ in
-                                withAnimation(Animation.easeOut(duration: 0.4)){
-                                    if ButtonOffset > ButtonWidth/2 {
-                                        ButtonOffset = ButtonWidth - 80
-                                        isOnboardingViewActive = false
-                                    } else {
-                                        ButtonOffset = 0
+                            DragGesture()
+                                .onChanged({ gesture in
+                                    if gesture.translation.width > 0 && ButtonOffset <= ButtonWidth - 80  {
+                                        ButtonOffset = gesture.translation.width
                                     }
-                                }
-                            })
+                                })
+                                .onEnded({ _ in
+                                    withAnimation(Animation.easeOut(duration: 0.4)){
+                                        if ButtonOffset > ButtonWidth/2 {
+                                            ButtonOffset = ButtonWidth - 80
+                                            isOnboardingViewActive = false
+                                        } else {
+                                            ButtonOffset = 0
+                                        }
+                                    }
+                                })
                         )
                         Spacer()
                     }
