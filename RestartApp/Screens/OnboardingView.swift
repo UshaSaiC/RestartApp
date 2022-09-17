@@ -11,6 +11,9 @@ struct OnboardingView: View {
     
     @AppStorage("onboarding") var isOnboardingViewActive: Bool = true
     
+    @State private var ButtonWidth: Double = UIScreen.main.bounds.width - 80
+    @State private var ButtonOffset: CGFloat = 0 // this property would be configured in  way, so that user when drags this value would be changed
+    
     var body: some View {
         ZStack {
             Color("ColorBlue")
@@ -64,7 +67,7 @@ struct OnboardingView: View {
                     HStack {
                         Capsule()
                             .fill(Color("ColorRed"))
-                            .frame(width: 80)
+                            .frame(width: ButtonOffset + 80)
                         
                         Spacer()
                     }
@@ -80,14 +83,31 @@ struct OnboardingView: View {
                                 .font(.system(size: 24, weight: .bold))
                         }
                         .foregroundColor(.white)
-                    .frame(width: 80, height: 80, alignment: .center)
-                    .onTapGesture {
-                        isOnboardingViewActive = false
-                    }
+                        .frame(width: 80, height: 80, alignment: .center)
+                        .offset(x: ButtonOffset)
+                        .gesture(
+                            // Button/Drag gesture has 2 states :
+                            // Active State : When user is dragging
+                            // Idle State : When button is inactive
+                        DragGesture()
+                            .onChanged({ gesture in
+                                if gesture.translation.width > 0 && ButtonOffset <= ButtonWidth - 80  {
+                                    ButtonOffset = gesture.translation.width
+                                }
+                            })
+                            .onEnded({ _ in
+                                if ButtonOffset > ButtonWidth/2 {
+                                    ButtonOffset = ButtonWidth - 80
+                                    isOnboardingViewActive = false
+                                } else {
+                                    ButtonOffset = 0
+                                }
+                            })
+                        )
                         Spacer()
                     }
                 }
-                .frame(height: 80, alignment: .center)
+                .frame(width: ButtonWidth, height: 80, alignment: .center)
                 .padding()
             }
         }
