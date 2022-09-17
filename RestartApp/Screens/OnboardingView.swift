@@ -12,7 +12,9 @@ struct OnboardingView: View {
     @AppStorage("onboarding") var isOnboardingViewActive: Bool = true
     
     @State private var ButtonWidth: Double = UIScreen.main.bounds.width - 80
-    @State private var ButtonOffset: CGFloat = 0 // this property would be configured in  way, so that user when drags this value would be changed
+    @State private var ButtonOffset: CGFloat = 0
+    @State private var IsAnimating: Bool = false
+    // we declare properties as Stage property as and when we want the values to be changed later on
     
     var body: some View {
         ZStack {
@@ -38,6 +40,11 @@ struct OnboardingView: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 10)
                 }
+                .opacity(IsAnimating ? 1 : 0)
+                .offset(y: IsAnimating ? 0 : -40)
+                // first parameter is animation parameter which now has easeOut animation. This animation, slows down at end with a pre-defined 1 second duration (which is explicitly added in code)
+                // second parameter is value parameter, which basically talks about what factor is causing this change in animation
+                .animation(.easeOut(duration: 1), value: IsAnimating)
                 
                 // Center
                 ZStack{
@@ -48,6 +55,8 @@ struct OnboardingView: View {
                         .resizable()
                         .scaledToFit()
                         .padding()
+                        .opacity(IsAnimating ? 1 : 0)
+                        .animation(.easeOut(duration: 0.5), value: IsAnimating)
                 }
                 
                 // Footer
@@ -96,11 +105,13 @@ struct OnboardingView: View {
                                 }
                             })
                             .onEnded({ _ in
-                                if ButtonOffset > ButtonWidth/2 {
-                                    ButtonOffset = ButtonWidth - 80
-                                    isOnboardingViewActive = false
-                                } else {
-                                    ButtonOffset = 0
+                                withAnimation(Animation.easeOut(duration: 0.4)){
+                                    if ButtonOffset > ButtonWidth/2 {
+                                        ButtonOffset = ButtonWidth - 80
+                                        isOnboardingViewActive = false
+                                    } else {
+                                        ButtonOffset = 0
+                                    }
                                 }
                             })
                         )
@@ -109,7 +120,13 @@ struct OnboardingView: View {
                 }
                 .frame(width: ButtonWidth, height: 80, alignment: .center)
                 .padding()
+                .opacity(IsAnimating ? 1 : 0)
+                .offset(y: IsAnimating ? 0 : 40)
+                .animation(.easeOut(duration: 1), value: IsAnimating)
             }
+        }
+        .onAppear {
+            IsAnimating = true
         }
     }
 }
