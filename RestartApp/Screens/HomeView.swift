@@ -1,10 +1,3 @@
-//
-//  HomeView.swift
-//  RestartApp
-//
-//  Created by Usha Sai Chintha on 17/09/22.
-//
-
 import SwiftUI
 
 struct HomeView: View {
@@ -46,6 +39,7 @@ struct HomeView: View {
             
             Button(action: {
                 withAnimation {
+                    playSound(sound: "success", type: "m4a")
                     isOnboardingViewActive = true
                 }
 
@@ -61,7 +55,6 @@ struct HomeView: View {
             .controlSize(.large)
         }
         .onAppear(perform: {
-            // DispatchQueue manages exceution of tasks serially or concurrently on app's main or background thread
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: {
                 IsAnimating = true
             })

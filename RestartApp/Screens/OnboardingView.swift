@@ -1,10 +1,3 @@
-//
-//  OnboardingView.swift
-//  RestartApp
-//
-//  Created by Usha Sai Chintha on 17/09/22.
-//
-
 import SwiftUI
 
 struct OnboardingView: View {
@@ -14,11 +7,11 @@ struct OnboardingView: View {
     @State private var ButtonWidth: Double = UIScreen.main.bounds.width - 80
     @State private var ButtonOffset: CGFloat = 0
     @State private var IsAnimating: Bool = false
-    // @State private var ImageOffset: CGSize = CGSize(width: 0, height: 0)
-    // below line is same as above commented line
     @State private var ImageOffset: CGSize = .zero
     @State private var IndicatorOpacity: Double = 1.0
     @State private var TextTitle: String = "Share"
+    
+    let hapticFeedback = UINotificationFeedbackGenerator()
     
     
     var body: some View {
@@ -28,6 +21,7 @@ struct OnboardingView: View {
             
             VStack(spacing: 20){
                 
+                // Header
                 Spacer()
                 VStack(spacing: 0){
                     Text(TextTitle)
@@ -55,7 +49,7 @@ struct OnboardingView: View {
                 ZStack{
                     
                     CircleGroupView(ShapeColor: .white, ShapeOpacity: 0.2)
-                        .offset(x: ImageOffset.width * -1) // value is given in negative as we want this effect to happen in opposite direction of run image
+                        .offset(x: ImageOffset.width * -1)
                         .blur(radius: abs(ImageOffset.width/5))
                         .animation(.easeOut(duration: 1), value: ImageOffset)
                     
@@ -71,7 +65,6 @@ struct OnboardingView: View {
                             DragGesture()
                                 .onChanged({ gesture in
                                     if abs(ImageOffset.width) <= 150 {
-                                        // translation provides information about total movement from start of drag gesture to current event
                                         ImageOffset = gesture.translation
                                         
                                         withAnimation(.linear(duration: 0.25)){
@@ -140,9 +133,6 @@ struct OnboardingView: View {
                         .frame(width: 80, height: 80, alignment: .center)
                         .offset(x: ButtonOffset)
                         .gesture(
-                            // Button/Drag gesture has 2 states :
-                            // Active State : When user is dragging
-                            // Idle State : When button is inactive
                             DragGesture()
                                 .onChanged({ gesture in
                                     if gesture.translation.width > 0 && ButtonOffset <= ButtonWidth - 80  {
@@ -152,9 +142,12 @@ struct OnboardingView: View {
                                 .onEnded({ _ in
                                     withAnimation(Animation.easeOut(duration: 0.4)){
                                         if ButtonOffset > ButtonWidth/2 {
+                                            hapticFeedback.notificationOccurred(.success)
+                                            playSound(sound: "chimeup", type: "mp3")
                                             ButtonOffset = ButtonWidth - 80
                                             isOnboardingViewActive = false
                                         } else {
+                                            hapticFeedback.notificationOccurred(.warning)
                                             ButtonOffset = 0
                                         }
                                     }
@@ -173,6 +166,7 @@ struct OnboardingView: View {
         .onAppear {
             IsAnimating = true
         }
+        .preferredColorScheme(.dark)
     }
 }
 
