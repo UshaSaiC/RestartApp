@@ -14,11 +14,10 @@ struct OnboardingView: View {
     var body: some View {
         ZStack {
             Color("ColorBlue")
-                .ignoresSafeArea(.all, edges: .all) // used to create a full screen background
+                .ignoresSafeArea(.all, edges: .all)
             
             VStack(spacing: 20){
                 
-                // Header
                 Spacer()
                 VStack(spacing: 0){
                     Text("Share")
@@ -26,7 +25,6 @@ struct OnboardingView: View {
                         .fontWeight(.heavy)
                         .foregroundColor(.white)
                     
-                    // by add text inside """  """(triple quotes) we can give multi-line text
                     Text("""
                 Its not how much we give but
                 how much love we put into giving
@@ -51,6 +49,7 @@ struct OnboardingView: View {
                     Image("character-1")
                         .resizable()
                         .scaledToFit()
+                        .padding()
                 }
                 
                 // Footer
